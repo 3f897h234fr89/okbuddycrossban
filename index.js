@@ -5,18 +5,10 @@ disbut(client);
 
 const config = require('./config.json');
 const NodeCache = require( "node-cache" );
+const fs = require('fs');
 const myCache = new NodeCache();
 
-const staffChannelsMap = new Map([
-    // ['Guild id', 'staff channel id']
-    ['865190393221873714', '865623967821332520'], // Debug server
-    ['854851946855006238', '854895303542571028'] // okbb
-]);
-
-const staffChannels = [
-    '865623967821332520', // Debug server
-    '854895303542571028' // okbb
-];
+const staffChannelsMap = new Map(JSON.parse(fs.readFileSync('guilds.json')));
 
 client.on('ready', () => {
     console.log(`${client.user.tag} is now online`);
@@ -71,7 +63,7 @@ client.on('clickButton', async (button) => {
         channel.send(`<@${clicker.id}> shared the ban of <@${args[2]}>`);
         message.delete();
         
-        staffChannels.forEach(channel => {
+        staffChannelsMap.values().forEach(channel => {
             client.channels.fetch(channel).then((channel) => {
                 channel.guild.fetchBans().then((bans) => { 
                     if(bans.get(bannedUser.id)) {
