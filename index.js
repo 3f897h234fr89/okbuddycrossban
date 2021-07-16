@@ -8,14 +8,7 @@ const NodeCache = require( "node-cache" );
 const fs = require('fs');
 const myCache = new NodeCache();
 
-const staffChannelsMap = new Map(JSON.parse(fs.readFileSync('guilds.json')));
-
-client.on('ready', () => {
-    console.log(`${client.user.tag} is now online`);
-    client.user.setActivity('deez nuts dangle', {
-        type: 'WATCHING'
-    });
-});
+var staffChannelsMap = new Map(Object.entries(JSON.parse(fs.readFileSync('guilds.json', 'utf-8'))));
 
 client.on('clickButton', async (button) => {
     const { channel, clicker, guild, id, message } = button;
