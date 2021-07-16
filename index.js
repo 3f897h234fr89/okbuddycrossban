@@ -25,18 +25,6 @@ client.on('ready', () => {
     });
 });
 
-client.on('message', (message) => {
-    const { channel, guild, author } = message;
-    if (message.content === 'deez 23465' && !author.bot) {
-        let button = new disbut.MessageButton()
-            .setStyle('red')
-            .setLabel('nuts') 
-            .setID('cock_and_balls');
-
-        channel.send('deez', button);
-    }
-});
-
 client.on('clickButton', async (button) => {
     const { channel, clicker, guild, id, message } = button;
     const args = id.split('-');
