@@ -121,7 +121,7 @@ client.on('guildBanAdd', (guild, user) => {
 
         const shareEmbed = new Discord.MessageEmbed()
             .setColor('#f54e42')
-            .setAuthor(`${user.tag} was banned`, user.avatarURL())
+            .setAuthor(`${user.tag} was banned from ${guild.name}`, user.avatarURL())
             .setDescription(`**Reason**: ${reason || 'unspecified'}`)
             .setFooter('Share this ban with the other servers?');
 
