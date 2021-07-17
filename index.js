@@ -131,4 +131,45 @@ client.on('guildBanAdd', (guild, user) => {
     });
 });
 
+// https://discord.com/developers/docs/interactions/slash-commands for more info on commandData structure
+const commandData = {
+    name: 'register',
+    description: 'Registers server with the okbuddy ban network.',
+};
+
+// handle registration of slash commands
+client.once('ready', () => {
+    // Creating a guild-specific command
+    // TODO: move this to global and not use specific guild
+    client.guilds.cache.get('854851946855006238').commands.create(commandData);
+});
+
+function registerGuild(interaction) {
+    staffChannelsMap[interaction.guild.id] = interaction.channel.id;
+}
+
+// handle execution of slash commands
+client.on('interactionCreate', interaction => {
+    // If the interaction isn't a slash command, return
+    if (!interaction.isCommand()) return;
+  
+    // Check if it is the correct command
+    if (interaction.commandName === 'register') {
+      // Reply to the command
+      interaction.reply("Sending request to bot owner to accept...");
+      // TODO: set up request system to bot owner to accept said requests
+      registerGuild(interaction)
+    }
+});
+
 client.login(config.token);
+
+// save the guild map on exit
+process.on('exit', () => {
+    console.log("Saving guild map...")
+    fs.writeFile("guilds.json", JSON.stringify(staffChannelsMap), function(err) {
+        if (err) {
+            console.log(err);
+        }
+    });
+});
