@@ -1,14 +1,5 @@
-# OkBuddyCrossBan
-
-HOW TO RUN:
-```sh
-$ node index.js
-```
-
-config.json setup: 
-```json
-{
-    "token" : "BOT_TOKEN"
-}
-```
+# OkBuddyCrossBan v2 (experimental)
  
+This is mainly just restructuring and rewriting the entire bot
+to make it cleaner, the functionality will almost remain the
+same.
