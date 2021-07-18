@@ -17,7 +17,7 @@ const createButton = (label, style, ID) => {
         .setID(ID);
 }
 
-client.on('ready', (client) => {
+client.on('ready', () => {
     console.log(`${client.user.tag} is now online`);
     client.user.setPresence({
         activity: {
