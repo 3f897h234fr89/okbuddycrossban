@@ -17,6 +17,16 @@ const createButton = (label, style, ID) => {
         .setID(ID);
 }
 
+client.on('ready', (client) => {
+    console.log(`${client.user.tag} is now online`);
+    client.user.setPresence({
+        activity: {
+            name: 'deez nuts dangle',
+            type: 'WATCHING'
+        }
+    });
+});
+
 client.on('clickButton', async (button) => {
     const { channel, clicker, guild, id, message } = button;
     const args = id.split('-');
