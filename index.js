@@ -15,17 +15,12 @@ const createButton = (label, style, ID) => {
         .setCustomId(ID);
 }
 
-
-function registerGuild(interaction) {
-    staffChannelsMap[interaction.guildId] = interaction.channelId;
-}
-
 client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
         const { channel, member, guild, customId, message } = interaction;
         const args = customId.split('-');
 
-        member.fetch().then(() => {
+        member?.fetch().then(() => {
             const banned = guild.members.cache.get(member.id);
             if (!banned.permissions.has(Discord.Permissions.FLAGS.BAN_MEMBERS)) {
                 channel.send(`<@${member.id}> you need the permission \`BAN_MEMBERS\` to be able to interact with this bot`);
@@ -99,13 +94,51 @@ client.on('interactionCreate', async (interaction) => {
                     })
                 });
             break;
+
+            case 'allow_prompt' :
+                staffChannelsMap[interaction.guildId] = interaction.channelId;
+                client.channels.fetch(args[2]).then((guild_channel) => {
+                    guild_channel.send("Bot owner has accepted the register request!");
+                    channel.send(`${args[1]} was successfully allowed into the network.`)
+                    message.delete();
+                });
+                
+            break;
+
+            case 'decline_prompt' :
+                client.channels.fetch(args[2]).then((guild_channel) => {
+                    guild_channel.send("Bot owner has declined the register request.");
+                    channel.send(`${args[1]} was declined from joining the network.`)
+                    message.delete();
+                });
+            break;
         }
     } else if (interaction.isCommand()) {
         if (interaction.commandName === 'register') {
+            if (staffChannelsMap.has(interaction.guildId)) {
+                interaction.reply("This server is already registered in the network!")
+                return;
+            }
             // Reply to the command
             interaction.reply("Sending request to bot owner to accept...");
+
             // TODO: set up request system to bot owner to accept said requests
-            registerGuild(interaction)
+            // register guild in map
+            client.users.fetch(config.authorId, false).then((user) => {
+                const verifyEmbed = new Discord.MessageEmbed()
+                    .setColor('#f54e42')
+                    .setAuthor('New cross-ban network registration request', interaction.guild.iconURL())
+                    .setDescription(`<#${interaction.channelId}> from ${interaction.guild.name} wants to join the network.`)
+                    .setFooter('Allow this server to join the network?');
+                
+                let shareButton = createButton('Share', 'SUCCESS', `allow_prompt-${interaction.guild.name}-${interaction.channel.id}`);
+                let cancelButton = createButton('Cancel', 'DANGER', `decline_prompt-${interaction.guild.name}-${interaction.channel.id}`);
+    
+                let row = new Discord.MessageActionRow()
+                    .addComponents(shareButton, cancelButton);
+
+                user.send({ embeds: [verifyEmbed], components: [row]})
+            });
         }
     }
 });
@@ -149,7 +182,7 @@ const commandData = {
 client.once('ready', () => {
     // Creating a guild-specific command
     // TODO: move this to global and not use specific guild
-    client.guilds.cache.get('854851946855006238').commands.create(commandData);
+    client.application?.commands.create(commandData);
 });
 client.login(config.token);
 
