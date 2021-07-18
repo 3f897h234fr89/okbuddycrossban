@@ -15,6 +15,16 @@ const createButton = (label, style, ID) => {
         .setCustomId(ID);
 }
 
+client.on('ready', () => {
+    console.log(`${client.user.tag} is now online`);
+    client.user.setPresence({
+        activity: {
+            name: 'deez nuts dangle',
+            type: 'WATCHING'
+        }
+    });
+});
+
 client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
         const { channel, member, guild, customId, message } = interaction;
