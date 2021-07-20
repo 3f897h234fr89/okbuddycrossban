@@ -6,6 +6,8 @@ const client = new Client({ intents: intents });
 
 const fs = require('fs');
 require('dotenv').config();
+const NodeCache = require( "node-cache" );
+global.cache = new NodeCache();
  
 const events = fs.readdirSync('./events').filter(file => file.endsWith('.js'));
 events.forEach(eventFile => {
