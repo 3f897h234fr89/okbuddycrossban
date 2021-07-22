@@ -1,6 +1,6 @@
 module.exports = {
     name: 'ping',
-    description: 'Gets the current bot delay',
+    description: 'Displays the current bot delay in ms',
     async callback(interaction) {
         interaction.channel.send('‍').then(resultMessage => {
 			const ping = resultMessage.createdTimestamp - interaction.createdTimestamp;
