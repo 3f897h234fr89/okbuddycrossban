@@ -13,6 +13,7 @@
     "discord-buttons": "^4.0.0",
     "discord.js": "^13.0.0-dev.4d53d0f.1626609771",
     "dotenv": "^10.0.0",
+    "ioredis": "^4.27.6",
     "node-cache": "^5.1.2"
   }
 }
