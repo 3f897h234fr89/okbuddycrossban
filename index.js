@@ -25,6 +25,9 @@ client.once('ready', async () => {
 });
 
 client.on('guildCreate', (guild) => {
+    // TODO: DM embed with the info to the bot host for moderation instead of this
+    console.log(`Joined new guild: ${guild.name}, id: ${guild.id}, member count: ${guild.memberCount}, vanity invite: ${guild.vanityURLCode || 'none'}`);
+
     app(guild.id).commands.post({
         data: {
             name: 'ping',
