@@ -1,16 +1,16 @@
-const { Client, Intents, MessageEmbed } = require('discord.js');
+const { Client, Intents, MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 const intents = new Intents();
-intents.add('GUILDS', 'GUILD_BANS');
+intents.add('GUILDS', 'GUILD_BANS', 'GUILD_MEMBERS');
 const client = new Client({ intents: intents });
 
 require('dotenv').config();
+const adler32 = require('adler32');
 const NodeCache = require('node-cache');
 global.cache = new NodeCache();
 
 const Redis = require('ioredis');
 const redis = new Redis(process.env.REDIS_PATH);
 
-const adler32 = require('adler32');
 const debugGuildId = '865190393221873714';
 
 const app = (guildID) => {
@@ -24,9 +24,32 @@ client.once('ready', async () => {
     });
 });
 
-client.on('guildCreate', (guild) => {
-    // TODO: DM embed with the info to the bot host for moderation instead of this
-    console.log(`Joined new guild: ${guild.name}, id: ${guild.id}, member count: ${guild.memberCount}, vanity invite: ${guild.vanityURLCode || 'none'}`);
+client.on('guildCreate', async (guild) => {
+    client.users.fetch(process.env.HOST_ID).then(async host => {
+        var date = new Date();
+        const embed = new MessageEmbed()
+            .setAuthor(guild.name, guild.iconURL())
+            .addFields(
+                { name: 'Guild id', value: guild.id.toString() },
+                { name: 'Member count', value: guild.memberCount.toString() },
+                { name: 'Vanity invite', value: guild.vanityURLCode || 'false' }
+            )
+            .setFooter(`Joined at ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} | ${date.getDate()}/${date.getMonth()}/${date.getFullYear()}`);
+        
+        const row = new MessageActionRow()
+            .addComponents(
+                new MessageButton()
+                    .setLabel('Leave')
+                    .setStyle('DANGER')
+                    .setCustomId(`leave-${guild.id}`),
+                new MessageButton()
+                    .setLabel('Ignore')
+                    .setStyle('SECONDARY')
+                    .setCustomId(`ignore-${guild.id}`)
+            );
+
+        host.send({ embeds: [embed], components: [row] });
+    });
 
     app(guild.id).commands.post({
         data: {
@@ -42,7 +65,7 @@ client.on('guildCreate', (guild) => {
             options: [
                 {
                     name: 'channel',
-                    description: 'Your server\'s staff channel',
+                    description: 'Your server\'s staff channel. (Don\'t forget to give the bot message and embed perms in the specified channel)',
                     required: true,
                     type: 7
                 },
@@ -54,12 +77,18 @@ client.on('guildCreate', (guild) => {
                 }
             ]
         }
-    })
+    });
+
+    app(guild.id).commands.post({
+        data: {
+            name: 'github',
+            description: 'View the github repository containing the source code.'
+        }
+    });
 });
 
 client.on('guildBanAdd', (ban) => {
-    // TODO: Leave the guild if server is not registered in
-    // the network.
+    // TODO: Return if the guild is not part of the network
     const [guild, user] = [ban.guild, ban.user];
 
     guild.bans.fetch(user.id).then(banInfo => {
