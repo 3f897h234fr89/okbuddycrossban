@@ -25,7 +25,6 @@ client.once('ready', async () => {
 });
 
 client.on('guildCreate', (guild) => {
-    // TODO: Add command creation logic
     app(guild.id).commands.post({
         data: {
             name: 'ping',
