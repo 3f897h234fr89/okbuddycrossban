@@ -108,8 +108,28 @@ client.on('guildBanAdd', (ban) => {
 client.on('interactionCreate', async (interaction) => {
     if(interaction.isButton()) {
         // TODO: Implement button logic
-    } else {
-        // TODO: Implement command logic
+    } else if (interaction.isCommand()){
+        switch (interaction.commandName) {
+            case 'ping':
+                interaction.channel.send('‍').then(async message => {
+                    const ping = message.createdTimestamp - interaction.createdTimestamp;
+                    message.delete();
+                    await interaction.reply({ content: `Current ping: ${ping}ms`, ephemeral: true });
+                });
+                break;
+
+            case 'register':
+                await interaction.reply({ content: 'WORK IN PROGRESS', ephemeral: true });
+                break;
+
+            case 'github':
+                await interaction.reply({ content: 'https://github.com/3f897h234fr89/okbuddycrossban', ephemeral: true });
+                break;
+
+            default:
+                console.error(`Invalid command: ${interaction.commandName}`);
+                break;
+        }
     }
 });
 
