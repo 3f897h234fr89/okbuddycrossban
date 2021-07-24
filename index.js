@@ -1,4 +1,4 @@
-const { Client, Intents, MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
+const { Client, Intents, MessageEmbed, MessageActionRow, MessageButton, Permissions } = require('discord.js');
 const intents = new Intents();
 intents.add('GUILDS', 'GUILD_BANS', 'GUILD_MEMBERS');
 const client = new Client({ intents: intents });
@@ -65,15 +65,9 @@ client.on('guildCreate', async (guild) => {
             options: [
                 {
                     name: 'channel',
-                    description: 'Your server\'s staff channel. (Don\'t forget to give the bot message and embed perms in the specified channel)',
+                    description: 'The staff channel of your server.',
                     required: true,
                     type: 7
-                },
-                {
-                    name: 'message',
-                    description: 'Optional register request message.',
-                    required: false,
-                    type: 3
                 }
             ]
         }
@@ -106,11 +100,14 @@ client.on('guildBanAdd', (ban) => {
 });
 
 client.on('interactionCreate', async (interaction) => {
+    const { guild, user, options, member } = interaction;
+
     if(interaction.isButton()) {
         // TODO: Implement button logic
     } else if (interaction.isCommand()){
         switch (interaction.commandName) {
             case 'ping':
+                // TODO: FIX THIS SHIT
                 interaction.channel.send('‍').then(async message => {
                     const ping = message.createdTimestamp - interaction.createdTimestamp;
                     message.delete();
@@ -119,7 +116,37 @@ client.on('interactionCreate', async (interaction) => {
                 break;
 
             case 'register':
-                await interaction.reply({ content: 'WORK IN PROGRESS', ephemeral: true });
+                if(!member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
+                    await interaction.reply({ content: 'You do not have permission to execute this command', ephemeral: true });
+                    return;
+                }
+
+                client.users.fetch(process.env.HOST_ID).then(async host => {
+                    const embedGuild = new MessageEmbed()
+                        .setAuthor(guild.name, guild.iconURL())
+                        .setDescription(`Member count: ${guild.memberCount}`)
+                        .setFooter('This server is asking to be accepted in the network.');
+                    const embedAuthor = new MessageEmbed()
+                        .setAuthor(user.tag, user.avatarURL())
+                        .setDescription(`GUID: ${guild.id}\nUUID: ${user.id}`)
+                        .setFooter('Request Author');
+
+                    const row = new MessageActionRow()
+                        .addComponents(
+                            new MessageButton()
+                                .setLabel('Accept')
+                                .setStyle('SUCCESS')
+                                .setCustomId(`accept-${guild.id}-${options.get('channel').id}`),
+                            new MessageButton()
+                                .setLabel('Reject')
+                                .setStyle('DANGER')
+                                .setCustomId(`reject-${guild.id}-${options.get('channel').id}`)
+                        );
+
+                    host.send({ embeds: [embedGuild, embedAuthor], components: [row] });
+                });
+                
+                await interaction.reply({ content: 'A request has been sent to the bot owner.', ephemeral: true });
                 break;
 
             case 'github':
