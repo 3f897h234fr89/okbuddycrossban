@@ -130,9 +130,11 @@ client.on('interactionCreate', async (interaction) => {
     const { guild, user, options, member, customId } = interaction;
 
     if(interaction.isButton()) {
-        if (!member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
-            await interaction.reply({ content: `<@${user.id}> you need the \`BAN_MEMBERS\` permissions to be able to interact with buttons`, ephemeral: true});
-            return;
+        if (user.id != process.env.HOST_ID) {
+            if (!member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
+                await interaction.reply({ content: `<@${user.id}> you need the \`BAN_MEMBERS\` permissions to be able to interact with buttons`, ephemeral: true});
+                return;
+            }
         }
 
         const args = customId.split('-');
