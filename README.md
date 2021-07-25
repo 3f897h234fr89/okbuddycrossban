@@ -2,9 +2,9 @@
  
 Usage:
 
-`/register [channel]` to request to register with the network
-`/ping` to get the current bot delay in ms
-`/github` to view this repository
+`/register [channel]` to request to register with the network  
+`/ping` to get the current bot delay in ms  
+`/github` to view this repository  
 
 Setup: 
 ```sh
