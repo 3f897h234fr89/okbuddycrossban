@@ -1,4 +1,4 @@
-# OkBuddyCrossBan v2 (experimental)
+# OkBuddyCrossBan 
  
 Usage:
 
