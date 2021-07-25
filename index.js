@@ -218,7 +218,7 @@ client.on('interactionCreate', async (interaction) => {
 
             case 'nban':
                 await interaction.update({ embeds: interaction.message.embeds, components: [] });
-                await interaction.followUp(`<@${user.id}> rejected the crossban of ${banData.user.tag} to this server`);
+                await interaction.followUp(`<@${user.id}> rejected the crossban of ${banData.user.tag}`);
                 break;
         
             default:
