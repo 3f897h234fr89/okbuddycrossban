@@ -13,6 +13,7 @@ cd okbuddycrossban
 npm i
 ```
 note: You will need Nodejs version 14 or higher.  
+
 .env setup:
 ```
 DISCORD_TOKEN = [YOUR_DISCORD_BOT_TOKEN]
