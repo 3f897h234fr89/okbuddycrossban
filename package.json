@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "adler32": "^0.1.7",
-    "discord-buttons": "^4.0.0",
     "discord.js": "^13.0.0-dev",
     "dotenv": "^10.0.0",
     "ioredis": "^4.27.6",
