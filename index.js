@@ -75,6 +75,11 @@ client.on('guildCreate', async (guild) => {
     });
 });
 
+client.on('guildDelete', async (guild) => {
+    await redis.srem('servers', guild.id);
+    await redis.del(guild.id);
+});
+
 client.on('guildBanAdd', async (ban) => {
     const [guild, user] = [ban.guild, ban.user];
 
@@ -113,6 +118,10 @@ client.on('guildBanAdd', async (ban) => {
         const staffChannelID = await redis.get(guild.id);
         const staffChannel = await client.channels.fetch(staffChannelID);
 
+        if (ban.reason.includes('Cross ban')) {
+            return;
+        }
+
         staffChannel.send({ embeds: [shareEmbed], components: [row] });
     });
 });
@@ -122,6 +131,7 @@ client.on('interactionCreate', async (interaction) => {
 
     if(interaction.isButton()) {
         const args = customId.split('-');
+        const banData = cache.get(args[1]);
         
         switch (args[0]) {
             case 'leave':
@@ -133,28 +143,38 @@ client.on('interactionCreate', async (interaction) => {
                 break;
 
             case 'share': 
-                const banData = cache.get(args[1]);
+                const bannedUser = client.users.fetch(banData.user.id);
                 const sharedEmbed = new MessageEmbed()
-                    .setAuthor(`${banData.user.tag} was banned in ${banData.guild.name}`, banData.user.avatarURL())
+                    .setAuthor(`${bannedUser.tag} was banned in ${banData.guild.name}`, (await bannedUser).avatarURL())
                     .setDescription(`**Reason:** ${banData.reason}`)
                     .setFooter('Apply this ban to this server?');
 
-                const servers = redis.smembers('servers');
+                const servers = await redis.smembers('servers');
+                await interaction.update({ embeds: interaction.message.embeds, components: [] });
+                await interaction.followUp(`<@${user.id}> shared the ban of ${banData.user.tag}`);
                 servers.forEach(async server => {
                     const channelID = await redis.get(server);
-                    client.channels.get(channelID).then(channel => {
-                        const row = new MessageActionRow()
-                        .addComponents(
-                             new MessageButton()
-                                .setLabel('Apply ban')
-                                .setStyle('DANGER')
-                                .setCustomId(`ban-${server}-${key}`),
-                            new MessageButton()
-                                .setLabel('Don\'t apply ban')
-                                .setStyle('SECONDARY')
-                                .setCustomId(`nban-${server}-${key}`)
-                        );
-                        channel.send({ embeds: [sharedEmbed], components: [row] });
+                    client.channels.fetch(channelID).then(channel => {
+                        channel.guild.bans.fetch().then(async bans => {
+                            const userBanned = bans.find(user => user.id === bannedUser.id);
+                            if (userBanned) {
+                                return;
+                            } else {
+                                const row = new MessageActionRow()
+                                    .addComponents(
+                                        new MessageButton()
+                                            .setLabel('Apply ban')
+                                            .setStyle('DANGER')
+                                            .setCustomId(`ban-${args[1]}-${server}`),
+                                        new MessageButton()
+                                            .setLabel('Don\'t apply ban')
+                                            .setStyle('SECONDARY')
+                                            .setCustomId(`nban-${args[1]}-${server}`)
+                                );
+                                channel.send({ embeds: [sharedEmbed], components: [row] });
+                                
+                            }
+                        });
                     });
                 });
                 break;
@@ -162,13 +182,12 @@ client.on('interactionCreate', async (interaction) => {
             case 'cancel':
                 await interaction.update({ embeds: interaction.message.embeds, components: [] });
                 await interaction.followUp(`<@${user.id}> has canceled the sharing of this ban.`);
-                cache.delete(args[1]);
                 break;
             
             case 'accept':
                 await redis.set(args[1], args[2]);
                 await redis.sadd('servers', args[1]);
-                interaction.reply(`Accepted guild "${guild.name}"`);
+                await interaction.reply('Accepted guild into the network.');
                 client.channels.fetch(args[2]).then(channel => {
                     channel.send('The bot owner has accepted the request to join the network.');
                 });
@@ -186,7 +205,6 @@ client.on('interactionCreate', async (interaction) => {
                 break;
 
             case 'ban':
-                const banData = args[2];
                 const reason = `Cross ban from server ${banData.guild.name}: ${banData.reason}`;
                 guild.members.ban(banData.user.id, { reason: reason });
                 await interaction.update({ embeds: interaction.message.embeds, components: [] });
@@ -224,13 +242,24 @@ client.on('interactionCreate', async (interaction) => {
                     return;
                 }
 
-                if(!client.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
-                    await interaction.reply({ content: 'Missing permissions: `BAN_MEMBERS`'});
+                const botMember = await guild.members.fetch(client.user.id);
+                if(!botMember.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
+                    await interaction.reply({ content: 'Missing permissions: `BAN_MEMBERS`', ephemeral: true});
                     return;
                 }
 
-                if (!client.member.permissionsIn(options.get('channel').channel).has(Permissions.FLAGS.VIEW_CHANNEL && Permissions.FLAGS.SEND_MESSAGES && Permissions.FLAGS.EMBED_LINKS)){
-                    await interaction.reply({ content: 'Missing permissions in specified channel. The bot should have following permissions in the specified channel: `VIEW_CHANNEL, SEND_MESSAGES, EMBED_LINKS`'});
+                if (!botMember.permissionsIn(options.get('channel').channel).has(Permissions.FLAGS.VIEW_CHANNEL)){
+                    await interaction.reply({ content: 'Missing permission `VIEW_CHANNEL` in the specified channel.', ephemeral: true});
+                    return;
+                }
+
+                if(!botMember.permissionsIn(options.get('channel').channel).has(Permissions.FLAGS.SEND_MESSAGES)) {
+                    await interaction.reply({ content: 'Missing permission `SEND_MESSAGES` in the specified channel.', ephemeral: true});
+                    return;
+                }
+
+                if(!botMember.permissionsIn(options.get('channel').channel).has(Permissions.FLAGS.EMBED_LINKS)) {
+                    await interaction.reply({ content: 'Missing permission `EMBED_LINKS` in the specified channel.', ephemeral: true});
                     return;
                 }
 
