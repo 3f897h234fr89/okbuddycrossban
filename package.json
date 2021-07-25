@@ -1,6 +1,6 @@
 {
   "name": "okbuddycrossban",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,8 +9,10 @@
   "author": "paisu",
   "license": "ISC",
   "dependencies": {
-    "discord-buttons": "^4.0.0",
-    "discord.js": "^13.0.0-dev.4d53d0f.1626523373",
+    "adler32": "^0.1.7",
+    "discord.js": "^13.0.0-dev",
+    "dotenv": "^10.0.0",
+    "ioredis": "^4.27.6",
     "node-cache": "^5.1.2"
   }
 }
