@@ -1,6 +1,6 @@
 const { Client, Intents, MessageEmbed, MessageActionRow, MessageButton, Permissions } = require('discord.js');
 const intents = new Intents();
-intents.add('GUILDS', 'GUILD_BANS', 'GUILD_MEMBERS');
+intents.add('GUILDS', 'GUILD_BANS', 'GUILD_MEMBERS', 'GUILD_MESSAGES');
 const client = new Client({ intents: intents });
 
 require('dotenv').config();
@@ -10,8 +10,6 @@ global.cache = new NodeCache();
 
 const Redis = require('ioredis');
 const redis = new Redis(process.env.REDIS_PATH);
-
-const debugGuildId = '865190393221873714';
 
 const app = (guildID) => {
     return guildID ? client.api.applications(client.user.id).guilds(guildID) : client.api.applications(client.user.id);
@@ -78,10 +76,12 @@ client.on('guildCreate', async (guild) => {
 });
 
 client.on('guildBanAdd', async (ban) => {
-    // TODO: Return if the guild is not part of the network
     const [guild, user] = [ban.guild, ban.user];
-    const redisPrefix = 'crossbans-channel-';
 
+    const partOfNetwork = await redis.sismember('servers', guild.id);
+    if (!partOfNetwork) {
+        return;
+    }
 
     guild.bans.fetch(user.id).then(async banInfo => {
         const reason = banInfo.reason;
@@ -110,7 +110,7 @@ client.on('guildBanAdd', async (ban) => {
                     .setCustomId(`cancel-${key}`)
             );
 
-        const staffChannelID = await redis.get(redisPrefix + guild.id);
+        const staffChannelID = await redis.get(guild.id);
         const staffChannel = await client.channels.fetch(staffChannelID);
 
         staffChannel.send({ embeds: [shareEmbed], components: [row] });
@@ -121,7 +121,6 @@ client.on('interactionCreate', async (interaction) => {
     const { guild, user, options, member, customId } = interaction;
 
     if(interaction.isButton()) {
-        // TODO: Implement button logic
         const args = customId.split('-');
         
         switch (args[0]) {
@@ -134,7 +133,30 @@ client.on('interactionCreate', async (interaction) => {
                 break;
 
             case 'share': 
+                const banData = cache.get(args[1]);
+                const sharedEmbed = new MessageEmbed()
+                    .setAuthor(`${banData.user.tag} was banned in ${banData.guild.name}`, banData.user.avatarURL())
+                    .setDescription(`**Reason:** ${banData.reason}`)
+                    .setFooter('Apply this ban to this server?');
 
+                const servers = redis.smembers('servers');
+                servers.forEach(async server => {
+                    const channelID = await redis.get(server);
+                    client.channels.get(channelID).then(channel => {
+                        const row = new MessageActionRow()
+                        .addComponents(
+                             new MessageButton()
+                                .setLabel('Apply ban')
+                                .setStyle('DANGER')
+                                .setCustomId(`ban-${server}-${key}`),
+                            new MessageButton()
+                                .setLabel('Don\'t apply ban')
+                                .setStyle('SECONDARY')
+                                .setCustomId(`nban-${server}-${key}`)
+                        );
+                        channel.send({ embeds: [sharedEmbed], components: [row] });
+                    });
+                });
                 break;
 
             case 'cancel':
@@ -144,8 +166,8 @@ client.on('interactionCreate', async (interaction) => {
                 break;
             
             case 'accept':
-                const redisPrefix = 'crossbans-channel-';
-                await redis.set(redisPrefix + args[1], args[2]);
+                await redis.set(args[1], args[2]);
+                await redis.sadd('servers', args[1]);
                 interaction.reply(`Accepted guild "${guild.name}"`);
                 client.channels.fetch(args[2]).then(channel => {
                     channel.send('The bot owner has accepted the request to join the network.');
@@ -161,6 +183,19 @@ client.on('interactionCreate', async (interaction) => {
                     await interaction.update({ embeds: interaction.message.embeds, components: [] });
                     await interaction.followUp('Rejected the join request');
                 });
+                break;
+
+            case 'ban':
+                const banData = args[2];
+                const reason = `Cross ban from server ${banData.guild.name}: ${banData.reason}`;
+                guild.members.ban(banData.user.id, { reason: reason });
+                await interaction.update({ embeds: interaction.message.embeds, components: [] });
+                await interaction.followUp(`<@${user.id}> applied the crossban of ${banData.user.tag} to this server`);
+                break;
+
+            case 'nban':
+                await interaction.update({ embeds: interaction.message.embeds, components: [] });
+                await interaction.followUp(`<@${user.id}> rejected the crossban of ${banData.user.tag} to this server`);
                 break;
         
             default:
@@ -180,6 +215,22 @@ client.on('interactionCreate', async (interaction) => {
             case 'register':
                 if(!member.permissions.has(Permissions.FLAGS.ADMINISTRATOR)) {
                     await interaction.reply({ content: 'You do not have permission to execute this command', ephemeral: true });
+                    return;
+                }
+
+                const partOfNetwork = await redis.sismember('servers', guild.id);
+                if(partOfNetwork) {
+                    await interaction.reply({ content: 'This guild is already registered with the network.', ephemeral: true });
+                    return;
+                }
+
+                if(!client.member.permissions.has(Permissions.FLAGS.BAN_MEMBERS)) {
+                    await interaction.reply({ content: 'Missing permissions: `BAN_MEMBERS`'});
+                    return;
+                }
+
+                if (!client.member.permissionsIn(options.get('channel').channel).has(Permissions.FLAGS.VIEW_CHANNEL && Permissions.FLAGS.SEND_MESSAGES && Permissions.FLAGS.EMBED_LINKS)){
+                    await interaction.reply({ content: 'Missing permissions in specified channel. The bot should have following permissions in the specified channel: `VIEW_CHANNEL, SEND_MESSAGES, EMBED_LINKS`'});
                     return;
                 }
 
