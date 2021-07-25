@@ -12,6 +12,7 @@ git clone https://github.com/3f897h234fr89/okbuddycrossban.git
 cd okbuddycrossban
 npm i
 ```
+note: You will need Nodejs version 14 or higher.
 .env setup:
 ```
 DISCORD_TOKEN = [YOUR_DISCORD_BOT_TOKEN]
@@ -24,4 +25,3 @@ Running the bot once the setup is completed:
 ```sh
 node index.js
 ```
-note: You will need Nodejs version 14 or higher.
