@@ -3,11 +3,20 @@
   "version": "2.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+      "node": "14.x",
+      "npm": "*"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "author": "paisu",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/3f897h234fr89/okbuddycrossban.git"
+  },
   "dependencies": {
     "adler32": "^0.1.7",
     "discord.js": "^13.0.0-dev",
