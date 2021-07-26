@@ -152,7 +152,7 @@ client.on('interactionCreate', async (interaction) => {
             case 'share': 
                 const bannedUser = client.users.fetch(banData.user.id);
                 const sharedEmbed = new MessageEmbed()
-                    .setAuthor(`${bannedUser.tag} was banned in ${banData.guild.name}`, (await bannedUser).avatarURL())
+                    .setAuthor(`${banData.user.tag} was banned in ${banData.guild.name}`, (await bannedUser).avatarURL())
                     .setDescription(`**Reason:** ${banData.reason}`)
                     .setFooter('Apply this ban to this server?');
 
@@ -229,12 +229,10 @@ client.on('interactionCreate', async (interaction) => {
     } else if (interaction.isCommand()){
         switch (interaction.commandName) {
             case 'ping':
-                // TODO: FIX THIS SHIT
-                interaction.channel.send('‍').then(async message => {
-                    const ping = message.createdTimestamp - interaction.createdTimestamp;
-                    message.delete();
-                    await interaction.reply({ content: `Current ping: ${ping}ms`, ephemeral: true });
+                interaction.defer({ephemeral: true}).then(() => {
+                    interaction.editReply({content: `Current ping: ${Date.now() - interaction.createdTimestamp}ms`, ephemeral: true});
                 });
+                
                 break;
 
             case 'register':
