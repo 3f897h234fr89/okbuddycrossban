@@ -165,7 +165,7 @@ client.on('interactionCreate', async (interaction) => {
                         channel.guild.bans.fetch().then(async bans => {
                             const userBanned = bans.find(user => user.id === bannedUser.id);
                             if (userBanned) {
-                                return;
+                                
                             } else {
                                 const row = new MessageActionRow()
                                     .addComponents(
