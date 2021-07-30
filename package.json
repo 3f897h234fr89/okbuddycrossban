@@ -1,0 +1,23 @@
+{
+  "name": "okbuddycrossban",
+  "version": "3.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paisu46/okbuddycrossban.git"
+  },
+  "author": "paisu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/paisu46/okbuddycrossban/issues"
+  },
+  "homepage": "https://github.com/paisu46/okbuddycrossban#readme",
+  "dependencies": {
+    "discord.js": "^13.0.0-dev.2675b08.1627646567",
+    "dotenv": "^10.0.0"
+  }
+}
