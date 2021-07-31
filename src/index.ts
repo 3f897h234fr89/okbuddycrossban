@@ -5,8 +5,10 @@ const client = new Discord.Client({intents: intents});
 import * as dotenv from 'dotenv';
 dotenv.config();
 
+import { colors } from './util/console_colors';
+
 client.once('ready', () => {
-    console.log(`${client.user.tag} is now online!`);
+    console.log(`${colors.fg.green} ✓ ${colors.reset} ${client.user.tag} is now up`);
 });
 
 client.login(process.env.token);
