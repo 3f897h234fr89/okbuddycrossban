@@ -32,9 +32,7 @@ client.on('messageCreate', async (message) => {
     const args = message.content.replace(`${prefix}${command}`, '').split(' ');
     switch (command) {
         case 'ping':
-            message.channel.send('pong!').then(response => {
-                response.edit(`pong! Current ping: ${(response.createdTimestamp - message.createdTimestamp) - client.ws.ping}ms.`);
-            });
+            message.channel.send(`pong! Current ping: ${message.createdTimestamp - Date.now()}ms`);
             break;
     
         default:
