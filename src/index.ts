@@ -9,36 +9,43 @@ import { colors } from './util/console_colors';
 
 client.once('ready', () => {
     console.log(`${colors.fg.green} ✓ ${colors.reset} ${client.user.tag} is now up`);
+    client.user.setActivity({
+        type: 'WATCHING',
+        name: 'you'
+    });
 });
 
-client.on('messageCreate', async (message) => { 
-    if (message.author.id != '717823747670802523') {
-        return;
-    }
-    
-    if (message.channel.type !== 'DM') {
-        const clientMember = await message.guild.members.fetch(client.user.id);
-        if (clientMember.permissionsIn(message.channel).missing(['SEND_MESSAGES'])) {
-            console.log(clientMember.permissionsIn(message.channel).missing(['SEND_MESSAGES']));
-        }
-    }
+async function getHost() {
+    const hostId:bigint = BigInt(process.env.host_id);
+    return await client.users.fetch(hostId); // Will throw an error if a non valid host id is provided
+}
 
-    const prefix = '!';
-    if(!message.content.startsWith(prefix)) {
-        return;
-    }
+async function sendGuildJoinNotification(guild) {
+    const host = await getHost();
+    var date = new Date();
 
-    const command = message.content.split(' ')[0].replace(prefix, '');
-    const args = message.content.replace(`${prefix}${command}`, '').split(' ');
-    switch (command) {
-        case 'ping':
-            message.channel.send(`pong! Current ping: ${message.createdTimestamp - Date.now()}ms`);
-            break;
-    
-        default:
-            message.channel.send(`Invalid command: \`${command}\``);
-            break;
-    }
+    const embed = new Discord.MessageEmbed()
+    .setAuthor(guild.name, guild.iconURL())
+    .addFields(
+        { name: 'Guild id', value: guild.id.toString() },
+        { name: 'Member count', value: guild.memberCount.toPrecision(21).toString() },
+        { name: 'Guild owner id', value: guild.ownerId.toString() },
+        { name: 'Vanity invite', value: guild.vanityURLCode || 'none'}
+    ) .setFooter(date.toISOString());
+
+    const component = new Discord.MessageActionRow()
+    .addComponents(
+        new Discord.MessageButton()
+        .setLabel('Leave')
+        .setStyle('DANGER')
+        .setCustomId(`leave-${guild.id}`)
+    );
+
+    host.send({ embeds: [embed], components: [component] })
+}
+
+client.on('guildCreate', guild => {
+    sendGuildJoinNotification(guild);
 });
 
 client.on('interactionCreate', (interaction) => {
