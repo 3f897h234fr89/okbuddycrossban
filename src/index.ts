@@ -2,6 +2,13 @@ import * as Discord from 'discord.js';
 const intents = new Discord.Intents().add('GUILDS', 'GUILD_BANS', 'DIRECT_MESSAGES', 'GUILD_MEMBERS', 'GUILD_MESSAGES');
 const client = new Discord.Client({intents: intents});
 
+import { DiscordInteractions } from "slash-commands"; // Only used to register commands
+const DI_interaction = new DiscordInteractions({
+    applicationId: client.application.id.toString(),
+    authToken: process.env.token,
+    publicKey: client.user.id.toString()
+});
+
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -20,7 +27,7 @@ async function getHost() {
     return await client.users.fetch(hostId); // Will throw an error if a non valid host id is provided
 }
 
-async function sendGuildJoinNotification(guild) {
+async function sendGuildJoinNotification(guild: Discord.Guild) {
     const host = await getHost();
     var date = new Date();
 
@@ -44,8 +51,39 @@ async function sendGuildJoinNotification(guild) {
     host.send({ embeds: [embed], components: [component] })
 }
 
+async function registerCommands(guild: Discord.Guild) {
+    const ping = {
+        name: 'ping',
+        description: 'Gets the current bot response time.'
+    }
+
+    await DI_interaction.createApplicationCommand(ping, guild.id.toString());
+
+    const github = {
+        name: 'github',
+        description: 'Get the link to the GitHub repository.'
+    }
+
+    await DI_interaction.createApplicationCommand(github, guild.id.toString());
+
+    const register = {
+        name: 'register',
+        description: 'Request to register this guild with the network.',
+        options: [
+            {
+                name: 'Mod/Staff channel',
+                description: 'the channel used by the moderation team of this server',
+                type: 7
+            },
+        ],
+    };
+
+    await DI_interaction.createApplicationCommand(register, guild.id.toString());
+}
+
 client.on('guildCreate', guild => {
     sendGuildJoinNotification(guild);
+    registerCommands(guild);
 });
 
 client.on('interactionCreate', (interaction) => {
