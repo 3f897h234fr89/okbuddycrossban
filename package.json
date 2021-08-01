@@ -19,11 +19,11 @@
   "homepage": "https://github.com/paisu46/okbuddycrossban#readme",
   "dependencies": {
     "adler32": "^0.1.7",
+    "discord-slash-commands-client": "^1.2.1",
     "discord.js": "^13.0.0-dev.2675b08.1627646567",
     "dotenv": "^10.0.0",
     "ioredis": "^4.27.6",
-    "node-cache": "^5.1.2",
-    "slash-commands": "^1.5.0"
+    "node-cache": "^5.1.2"
   },
   "devDependencies": {
     "ts-node": "^10.1.0",

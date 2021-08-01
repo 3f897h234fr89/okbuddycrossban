@@ -2,17 +2,36 @@ import * as Discord from 'discord.js';
 const intents = new Discord.Intents().add('GUILDS', 'GUILD_BANS', 'DIRECT_MESSAGES', 'GUILD_MEMBERS', 'GUILD_MESSAGES');
 const client = new Discord.Client({intents: intents});
 
-import { DiscordInteractions } from "slash-commands"; // Only used to register commands
-const DI_interaction = new DiscordInteractions({
-    applicationId: client.application.id.toString(),
-    authToken: process.env.token,
-    publicKey: client.user.id.toString()
-});
-
 import * as dotenv from 'dotenv';
 dotenv.config();
-
 import { colors } from './util/console_colors';
+
+// import * as interactionsClient from 'discord-slash-commands-client'; // Only used to register commands
+// let interactionClient: interactionsClient.Client;
+// async function registerCommands() {
+//     interactionClient.createCommand({
+//         name: 'ping',
+//         description: 'Gets the current bot delay.'
+//     });
+
+//     interactionClient.createCommand({
+//         name: 'github',
+//         description: 'Get the link to the Github repository.'
+//     });
+
+//     interactionClient.createCommand({
+//         name: 'register',
+//         description: 'Request to register with the network.',
+//         options: [
+//             {
+//                 name: 'Staff/Mod channel',
+//                 description: 'The current staff/mod channel of your server',
+//                 type: 7,
+//                 required: true
+//             }
+//         ]
+//     });
+// }
 
 client.once('ready', () => {
     console.log(`${colors.fg.green} ✓ ${colors.reset} ${client.user.tag} is now up`);
@@ -20,6 +39,9 @@ client.once('ready', () => {
         type: 'WATCHING',
         name: 'you'
     });
+
+    // interactionClient = new interactionsClient.Client(process.env.token, client.user.id.toString());
+    // registerCommands();
 });
 
 async function getHost() {
@@ -35,7 +57,7 @@ async function sendGuildJoinNotification(guild: Discord.Guild) {
     .setAuthor(guild.name, guild.iconURL())
     .addFields(
         { name: 'Guild id', value: guild.id.toString() },
-        { name: 'Member count', value: guild.memberCount.toPrecision(21).toString() },
+        { name: 'Member count', value: guild.memberCount.toString() },
         { name: 'Guild owner id', value: guild.ownerId.toString() },
         { name: 'Vanity invite', value: guild.vanityURLCode || 'none'}
     ) .setFooter(date.toISOString());
@@ -51,39 +73,8 @@ async function sendGuildJoinNotification(guild: Discord.Guild) {
     host.send({ embeds: [embed], components: [component] })
 }
 
-async function registerCommands(guild: Discord.Guild) {
-    const ping = {
-        name: 'ping',
-        description: 'Gets the current bot response time.'
-    }
-
-    await DI_interaction.createApplicationCommand(ping, guild.id.toString());
-
-    const github = {
-        name: 'github',
-        description: 'Get the link to the GitHub repository.'
-    }
-
-    await DI_interaction.createApplicationCommand(github, guild.id.toString());
-
-    const register = {
-        name: 'register',
-        description: 'Request to register this guild with the network.',
-        options: [
-            {
-                name: 'Mod/Staff channel',
-                description: 'the channel used by the moderation team of this server',
-                type: 7
-            },
-        ],
-    };
-
-    await DI_interaction.createApplicationCommand(register, guild.id.toString());
-}
-
 client.on('guildCreate', guild => {
     sendGuildJoinNotification(guild);
-    registerCommands(guild);
 });
 
 client.on('interactionCreate', (interaction) => {
