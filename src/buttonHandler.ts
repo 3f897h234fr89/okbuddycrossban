@@ -16,10 +16,38 @@ export async function handleButton(interaction: Discord.ButtonInteraction, clien
     const args = interaction.customId.split('-');
     switch (args[0]) {
         case 'leave':
+            util.disableButtons(interaction);
+            interaction.followUp({ content: 'Left guild' });
             util.leaveGuild(BigInt(args[1]), client);
             break;
     
-        default:
+        case 'accept': 
+            util.disableButtons(interaction);
+            interaction.followUp({ content: 'Accepted guild' });
+            util.acceptGuild(args, client, interaction);
+            break;
+
+        case 'reject':
+            util.disableButtons(interaction);
+            interaction.followUp({ content: 'Rejected guild' });
+            util.leaveGuild(BigInt(`${args[1]}`), client);
+            break;
+
+        case 'share':
+            util.disableButtons(interaction);
+            interaction.followUp({ content: `<@${interaction.user.id}> shared this ban` });
+            util.shareBan(args[1], client);
+            break;
+        
+        case 'cancel':
+            util.disableButtons(interaction);
+            interaction.followUp({ content: `<@${interaction.user.id}> canceled the sharing of this ban` });
+            break;
+
+        case 'ban':
+            util.applyBan(args, interaction, client)
+            util.disableButtons(interaction);
+            interaction.followUp({ content: `<@${interaction.user.id}> applied this ban` });
             break;
     }
 }

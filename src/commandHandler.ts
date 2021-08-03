@@ -8,8 +8,15 @@ export async function handleCommand(interaction: Discord.CommandInteraction, cli
                 content: `Current ping: ${interaction.createdTimestamp - Date.now()}ms`,
                 ephemeral: true
             });
-            
-            
+        case 'register':
+            util.requestNetwork(interaction, client);
+            break;
+        
+        case 'github': 
+            interaction.reply({
+                content: 'https://github.com/paisu46/okbuddycrossban',
+                ephemeral: true
+            });
             break;
     }
     const date = new Date();

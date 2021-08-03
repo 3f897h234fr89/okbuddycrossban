@@ -22,6 +22,19 @@ client.on('guildCreate', guild => {
     util.sendGuildJoinNotification(guild, client);
 });
 
+client.on('guildDelete', guild => {
+    util.removeFromNetwork(guild.id);
+});
+
+client.on('guildBanAdd', async ban => {
+    const [guild, user, reason] = [ban.guild, ban.user, ban.reason];
+    if (!await util.isPartOfNetwork(guild.id)) {
+        return;
+    }
+    util.cacheBanData(user.id, guild.id, reason);
+    util.askToShare(guild.id, client, ban);
+});
+
 import { handleButton } from './buttonHandler';
 import { handleCommand } from './commandHandler';
 client.on('interactionCreate', async (interaction) => {
