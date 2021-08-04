@@ -8,12 +8,12 @@ export async function getHost(client: Discord.Client) {
     return await client.users.fetch(hostId); // Will throw an error if a non valid host id is provided
 }
 
-export function leaveGuild(guild: Discord.Guild | bigint, client: Discord.Client) {
+export async function leaveGuild(guild: Discord.Guild | bigint, client: Discord.Client) {
     if (typeof guild === 'bigint') {
         const _guild = client.guilds.cache.get(guild);
-        _guild.leave();
+        await _guild.leave();
     } else {
-        guild.leave();
+        await guild.leave();
     }
 }
 
@@ -38,7 +38,7 @@ export async function sendGuildJoinNotification(guild: Discord.Guild, client: Di
         .setCustomId(`leave-${guild.id}`)
     );
 
-    host.send({ embeds: [embed], components: [component] });
+    await host.send({ embeds: [embed], components: [component] });
 }
 
 export const colors = {
@@ -118,7 +118,7 @@ export async function requestNetwork(interaction: Discord.CommandInteraction, cl
         return;
     }
 
-    sendRequestEmbed(interaction, client, channel);
+    await sendRequestEmbed(interaction, client, channel);
 }
 
 async function sendRequestEmbed (interaction: Discord.CommandInteraction, client: Discord.Client, channel: Discord.GuildChannel) {
@@ -146,20 +146,20 @@ async function sendRequestEmbed (interaction: Discord.CommandInteraction, client
             .setCustomId(`reject-${interaction.guild.id}`)
         );
 
-    host.send({ content: 'New network join request', embeds: [authorEmbed, guildEmbed], components: [row]});
+    await host.send({ content: 'New network join request', embeds: [authorEmbed, guildEmbed], components: [row]});
 }
 
 export async function disableButtons (interaction: Discord.ButtonInteraction) {
     const embeds = interaction.message.embeds as Discord.MessageEmbed[];
-    interaction.update({ content: interaction.message.content, embeds: embeds, components: []});
+    await interaction.update({ content: interaction.message.content, embeds: embeds, components: []});
 }
 
 export async function acceptGuild(args: string[], client: Discord.Client, interaction: Discord.ButtonInteraction) {
     await redis.set(`cb:${args[1]}`, args[2]);
     await redis.sadd('cb:servers', args[1]);
-    disableButtons(interaction);
+    await disableButtons(interaction);
     const channel = await client.channels.fetch(BigInt(`${args[2]}`)) as Discord.TextChannel;
-    channel.send('The bot owner has accepted the request to join the network.');
+    await channel.send('The bot owner has accepted the request to join the network.');
 }
 
 export async function removeFromNetwork(guildId: bigint) {
@@ -179,7 +179,7 @@ export async function cacheBanData(userId: bigint, guildId: bigint, reason: stri
         guildId: guildId,
         reason: reason
     };
-    redis.hmset(banKey, banData);
+    await redis.hmset(banKey, banData);
 }
 
 export async function askToShare(guildId: bigint, client: Discord.Client, ban: Discord.GuildBan) {
@@ -188,7 +188,7 @@ export async function askToShare(guildId: bigint, client: Discord.Client, ban: D
     }
 
     const channel = await client.channels.fetch(BigInt(`${await redis.get(`cb:${guildId}`)}`)) as Discord.TextChannel;
-    sendAskToShareEmbed(channel, ban);
+    await sendAskToShareEmbed(channel, ban);
 }
 
 export async function sendAskToShareEmbed(channel: Discord.TextChannel, ban: Discord.GuildBan) {
@@ -210,7 +210,7 @@ export async function sendAskToShareEmbed(channel: Discord.TextChannel, ban: Dis
         .setCustomId(`cancel-${banKey}`)
     );
 
-    channel.send({ 
+    await channel.send({ 
         content: 'New ban detected', 
         embeds: [embed], components: 
         [row] 
@@ -227,10 +227,10 @@ export async function shareBan(banKey: string, client: Discord.Client) {
         const guild = await client.guilds.fetch(server);
         const guildBans = await guild.bans.fetch();
         if (guildBans.get(user.id)) {
-            sendAlreadyBannedEmbed(user, guild, reason, client, guildId);
+            await sendAlreadyBannedEmbed(user, guild, reason, client, guildId);
             continue;
         } else {
-            sendShareEmbed(user, guild, reason, client, guildId)
+            await sendShareEmbed(user, guild, reason, client, guildId)
         }
     }
 }
@@ -252,7 +252,7 @@ async function sendShareEmbed(user: Discord.User, guild: Discord.Guild, reason: 
         .setCustomId(`ban-${user.id}-${guild.id}`)
     );
 
-    channel.send({
+    await channel.send({
         content: `New ban shared from ${originGuild.name}`,
         embeds: [embed],
         components: [row]
@@ -268,7 +268,7 @@ async function sendAlreadyBannedEmbed(user: Discord.User, guild: Discord.Guild, 
     .setDescription(`**Reason:** ${reason}`)
     .setFooter('This user is already banned in this guild');
 
-    channel.send({
+    await channel.send({
         content: `New ban shared from ${originGuild.name}`,
         embeds: [embed]
     });
@@ -280,5 +280,5 @@ export async function applyBan(args: string[], interaction: Discord.ButtonIntera
     const { guildId, reason } = banData;
     const guild = await client.guilds.fetch(guildId);
 
-    interaction.guild.members.ban(BigInt(`${args[1]}`), { reason: `Crossban from ${guild.name}: ${reason}` });
+    await interaction.guild.members.ban(BigInt(`${args[1]}`), { reason: `Crossban from ${guild.name}: ${reason}` });
 }

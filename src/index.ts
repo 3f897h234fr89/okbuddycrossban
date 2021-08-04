@@ -14,16 +14,16 @@ client.once('ready', async () => {
         name: 'you'
     });
 
-    // interactionHelper.setup(client.user.id.toString());
-    // interactionHelper.printCommands(client.user.id.toString());
+    // await interactionHelper.setup(client.user.id.toString());
+    // await interactionHelper.printCommands(client.user.id.toString());
 });
 
-client.on('guildCreate', guild => {
-    util.sendGuildJoinNotification(guild, client);
+client.on('guildCreate', async guild => {
+    await util.sendGuildJoinNotification(guild, client);
 });
 
-client.on('guildDelete', guild => {
-    util.removeFromNetwork(guild.id);
+client.on('guildDelete', async guild => {
+    await util.removeFromNetwork(guild.id);
 });
 
 client.on('guildBanAdd', async ban => {
@@ -39,9 +39,9 @@ import { handleButton } from './buttonHandler';
 import { handleCommand } from './commandHandler';
 client.on('interactionCreate', async (interaction) => {
     if (interaction.isButton()) {
-        handleButton(interaction, client);
+        await handleButton(interaction, client);
     } else if (interaction.isCommand()) {
-        handleCommand(interaction, client);
+        await handleCommand(interaction, client);
     }
 });
 

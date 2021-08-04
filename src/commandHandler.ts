@@ -8,23 +8,29 @@ export async function handleCommand(interaction: Discord.CommandInteraction, cli
 
     switch(interaction.commandName) {
         case 'ping': 
-            interaction.reply({
+            await interaction.reply({
                 content: `Current ping: ${(Date.now() - interaction.createdTimestamp) - client.ws.ping}ms`,
                 ephemeral: true
             });
+            break;
+            
         case 'register':
-            interaction.followUp({
+            await interaction.reply({
                 content: 'A request has been sent to the bot owner',
                 ephemeral: true
             });
-            util.requestNetwork(interaction, client);
+            await util.requestNetwork(interaction, client);
             break;
         
         case 'github': 
-            interaction.reply({
+            await interaction.reply({
                 content: 'https://github.com/paisu46/okbuddycrossban',
                 ephemeral: true
             });
+            break;
+
+        default:
+            throw new Error(`Unkown command: ${interaction.commandName}`);
             break;
     }
     const date = new Date();
