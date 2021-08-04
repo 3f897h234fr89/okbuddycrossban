@@ -22,6 +22,8 @@ Note: you will also need a running instance of an redis server. [How to set up a
 Running the bot:
 ```bash
 npm start
+```
 OR
+```bash
 ts-node-dev --respawn --transpile-only --poll ./src/index.ts
 ```
