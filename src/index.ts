@@ -6,17 +6,22 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import * as util from './util';
 
-// import * as interactionHelper from './interactionHelper';
 client.once('ready', async () => {
     console.log(`[${util.colors.fg.green}✓${util.colors.reset}] ${client.user.tag} is now up`);
     client.user.setActivity({
         type: 'WATCHING',
-        name: 'you'
+        name: 'bans'
     });
 
-    // await interactionHelper.setup(client.user.id.toString());
-    // await interactionHelper.printCommands(client.user.id.toString());
+    // await setupInteractions();
 });
+
+// Uncomment this if you need to register commands
+// import * as interactionHelper from './interactionHelper';
+// async function setupInteractions() {
+//     await interactionHelper.setup(client.user.id.toString());
+//     await interactionHelper.printCommands(client.user.id.toString());
+// }
 
 client.on('guildCreate', async guild => {
     await util.sendGuildJoinNotification(guild, client);
@@ -27,12 +32,11 @@ client.on('guildDelete', async guild => {
 });
 
 client.on('guildBanAdd', async ban => {
-    const [guild, user, reason] = [ban.guild, ban.user, ban.reason];
-    if (!await util.isPartOfNetwork(guild.id)) {
+    if (!await util.isPartOfNetwork(ban.guild.id)) {
         return;
     }
-    util.cacheBanData(user.id, guild.id, reason);
-    util.askToShare(guild.id, client, ban);
+    await util.askToShare(ban.guild.id, client, ban);
+    
 });
 
 import { handleButton } from './buttonHandler';

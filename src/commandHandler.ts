@@ -13,13 +13,10 @@ export async function handleCommand(interaction: Discord.CommandInteraction, cli
                 ephemeral: true
             });
             break;
-            
+
         case 'register':
-            await interaction.reply({
-                content: 'A request has been sent to the bot owner',
-                ephemeral: true
-            });
             await util.requestNetwork(interaction, client);
+            
             break;
         
         case 'github': 
@@ -34,5 +31,5 @@ export async function handleCommand(interaction: Discord.CommandInteraction, cli
             break;
     }
     const date = new Date();
-    console.log(`[${util.colors.fg.yellow}!${util.colors.reset}] Executed command '${interaction.commandName}' for user '${interaction.user.tag}' in '${interaction.guild.name || 'dms'}' at ${date.toLocaleTimeString()} ${date.toLocaleDateString()}`);
+    console.log(`[${util.colors.fg.yellow}!${util.colors.reset}] Executed command '${interaction.commandName}' for user '${interaction.user.tag}' at ${date.toLocaleTimeString()} ${date.toLocaleDateString()}`);
 }
