@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "okbuddycrossbans",
+        "type": "node",
+        "request": "launch",
+        "runtimeExecutable": "ts-node-dev",
+        "runtimeArgs": [],
+  
+        "args": ["src/index.ts"],
+        
+        "cwd": "${workspaceRoot}",
+        "internalConsoleOptions": "openOnSessionStart",
+        "skipFiles": ["<node_internals>/**", "node_modules/**"]
+      }
+    ]
+  }

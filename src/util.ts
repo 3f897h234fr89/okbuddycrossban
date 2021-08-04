@@ -1,5 +1,5 @@
 import * as Discord from 'discord.js';
-import * as Redis from 'ioredis';
+import Redis from 'ioredis';
 const redis = new Redis(process.env.redis_path);
 import * as adler32 from 'adler32';
 
@@ -92,7 +92,7 @@ export async function requestNetwork(interaction: Discord.CommandInteraction, cl
         return;
     }
 
-    const clientMember = await interaction.guild.members.fetch(BigInt(`${client.user.id}`));
+    const clientMember = await interaction.guild.members.fetch(client.user.id);
     if (!clientMember.permissions.has(Discord.Permissions.FLAGS.BAN_MEMBERS)) {
         await interaction.reply({
             content: 'Missing permission `BAN_MEMBERS`',
