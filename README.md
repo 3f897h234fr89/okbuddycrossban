@@ -2,7 +2,7 @@
 
 Usage: 
 `/register` to request to register with the network  
-`/ping` to get the current bot delay and check if it's still alive
+`/ping` to get the current bot delay and check if it's still alive  
 `/github` to get the link to this repository
 
 Setup: 
