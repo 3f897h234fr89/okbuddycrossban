@@ -1,27 +1,33 @@
 {
   "name": "okbuddycrossban",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "",
-  "main": "index.js",
-  "engines": {
-      "node": "14.x",
-      "npm": "*"
-  },
+  "main": "src/index.ts",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "ts-node-dev --respawn --transpile-only --poll ./src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paisu46/okbuddycrossban.git"
   },
   "author": "paisu",
   "license": "ISC",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/3f897h234fr89/okbuddycrossban.git"
+  "bugs": {
+    "url": "https://github.com/paisu46/okbuddycrossban/issues"
   },
+  "homepage": "https://github.com/paisu46/okbuddycrossban#readme",
   "dependencies": {
     "adler32": "^0.1.7",
-    "discord.js": "^13.0.0-dev",
+    "discord-slash-commands-client": "^1.2.1",
+    "discord.js": "^13.0.0-dev.2675b08.1627646567",
     "dotenv": "^10.0.0",
     "ioredis": "^4.27.6",
     "node-cache": "^5.1.2"
+  },
+  "devDependencies": {
+    "ts-node": "^10.1.0",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.3.5"
   }
 }
