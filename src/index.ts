@@ -8,15 +8,11 @@ import * as util from './util';
 
 client.once('ready', async () => {
     console.log(`[${util.colors.fg.green}✓${util.colors.reset}] ${client.user.tag} is now up`);
-    client.user.setActivity({
-        type: 'WATCHING',
-        name: 'bans'
-    });
 
     // await setupInteractions();
 });
 
-// Uncomment this if you need to register commands
+/* Uncomment this if you need to register commands */
 // import * as interactionHelper from './interactionHelper';
 // async function setupInteractions() {
 //     await interactionHelper.setup(client.user.id.toString());

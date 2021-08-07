@@ -269,7 +269,7 @@ async function sendAlreadyBannedEmbed(user: Discord.User, guild: Discord.Guild, 
     const originGuild = await client.guilds.fetch(originGuildId);
 
     const embed = new Discord.MessageEmbed()
-    .setAuthor(`${user.tag} was banned in ${originGuild.name}`)
+    .setAuthor(`${user.tag} was banned in ${originGuild.name}`, user.avatarURL())
     .setDescription(`**Reason:** ${reason}`)
     .setFooter('This user is already banned in this guild');
 
